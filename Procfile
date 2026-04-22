@@ -1,0 +1,1 @@
+web: gunicorn okada.wsgi --log-file -
