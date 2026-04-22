@@ -7,6 +7,8 @@ SECRET_KEY = config('SECRET_KEY')
 DEBUG = config('DEBUG', cast=bool)
 ALLOWED_HOSTS = ['*', 'okadaa.onrender.com']
 
+CORS_ALLOW_ALL_ORIGINS = True
+
 # Applications
 DJANGO_APPS = [
     'django.contrib.admin',
@@ -116,9 +118,6 @@ REST_FRAMEWORK = {
     ),
 }
 
-# CORS
-CORS_ALLOW_ALL_ORIGINS = True
-
 # Static & Media
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
@@ -144,3 +143,8 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://okadaa.onrender.com',
+    'https://*.vercel.app',
+]
