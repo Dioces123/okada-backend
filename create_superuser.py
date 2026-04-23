@@ -7,15 +7,13 @@ django.setup()
 from accounts.models import User
 
 phone = '0509013833'
-name = 'Okada'
 password = 'Gbawe@Secure!@#'
 
-if not User.objects.filter(phone=phone).exists():
-    user = User.objects.create_superuser(
-        phone=phone,
-        name=name,
-        password=password
-    )
+try:
+    user = User.objects.get(phone=phone)
+    user.set_password(password)
+    user.save()
+    print(f'Password reset for {phone}')
+except User.DoesNotExist:
+    User.objects.create_superuser(phone=phone, name='Okada Admin', password=password)
     print(f'Superuser created: {phone}')
-else:
-    print('Superuser already exists.')
