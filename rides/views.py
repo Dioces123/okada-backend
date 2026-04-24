@@ -16,6 +16,7 @@ from .models import Ride, Payment, FareSettings
 from .serializers import RideSerializer, RequestRideSerializer, FareSettingsSerializer
 from .fare import calculate_fare
 from .matching import find_nearest_rider
+from django.db import transaction
 
 
 class FareEstimateView(APIView):
@@ -112,27 +113,34 @@ class AcceptRideView(APIView):
             return Response({'error': 'Only riders can accept rides.'}, status=403)
 
         try:
-            ride = Ride.objects.get(id=ride_id, status='requested')
             rider_profile = request.user.rider_profile
-        except Ride.DoesNotExist:
-            return Response({'error': 'Ride not found or already taken.'}, status=404)
-        except Exception:
+        except:
             return Response({'error': 'Rider profile not found.'}, status=404)
 
         if rider_profile.approval_status != 'approved':
             return Response({'error': 'Your account is not approved.'}, status=403)
 
-        ride.rider = rider_profile
-        ride.status = 'accepted'
-        ride.accepted_at = timezone.now()
-        ride.save()
+        # Use atomic transaction + select_for_update to prevent race condition
+        try:
+            with transaction.atomic():
+                ride = Ride.objects.select_for_update().get(
+                    id=ride_id,
+                    status='requested',
+                    rider__isnull=True
+                )
+                ride.rider = rider_profile
+                ride.status = 'accepted'
+                ride.accepted_at = timezone.now()
+                ride.save()
 
-        # Notify passenger
-        notify_ride_accepted(
-            ride.passenger.phone,
-            rider_profile.user.name,
-            rider_profile.number_plate
-        )
+                notify_ride_accepted(
+                    ride.passenger.phone,
+                    rider_profile.user.name,
+                    rider_profile.number_plate
+                )
+
+        except Ride.DoesNotExist:
+            return Response({'error': 'Ride not found or already taken.'}, status=404)
 
         return Response({
             'message': 'Ride accepted.',
