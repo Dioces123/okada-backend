@@ -7,6 +7,7 @@ from .views import (
     CancelRideView,
     RideHistoryView,
     RateRideView,
+    AvailableRidesView,
 )
 
 urlpatterns = [
@@ -17,4 +18,5 @@ urlpatterns = [
     path('<int:ride_id>/cancel/', CancelRideView.as_view(), name='cancel-ride'),
     path('<int:ride_id>/rate/', RateRideView.as_view(), name='rate-ride'),
     path('history/', RideHistoryView.as_view(), name='ride-history'),
+    path('available/', AvailableRidesView.as_view(), name='available-rides'),
 ]

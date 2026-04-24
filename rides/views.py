@@ -261,3 +261,26 @@ class RateRideView(APIView):
         rider.save()
 
         return Response({'message': 'Rating submitted. Thank you!'}, status=200)
+
+
+class AvailableRidesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role != 'rider':
+            return Response({'error': 'Only riders can view available rides.'}, status=403)
+
+        try:
+            rider_profile = request.user.rider_profile
+        except:
+            return Response({'error': 'Rider profile not found.'}, status=404)
+
+        if rider_profile.approval_status != 'approved':
+            return Response({'error': 'Your account is not approved.'}, status=403)
+
+        rides = Ride.objects.filter(
+            status='requested',
+            rider__isnull=True
+        ).order_by('-requested_at')
+
+        return Response(RideSerializer(rides, many=True).data, status=200)
