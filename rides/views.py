@@ -185,6 +185,14 @@ class UpdateRideStatusView(APIView):
         elif new_status == 'completed':
             ride.completed_at = now
             ride.final_fare = ride.estimated_fare
+
+            # Calculate 13% platform fee and 87% rider earnings
+            platform_fee = round(float(ride.final_fare) * 0.13, 2)
+            rider_earnings = round(float(ride.final_fare) - platform_fee, 2)
+
+            ride.platform_fee = platform_fee
+            ride.rider_earnings = rider_earnings
+
             Payment.objects.create(
                 ride=ride,
                 amount=ride.final_fare,
@@ -192,9 +200,11 @@ class UpdateRideStatusView(APIView):
                 status='completed',
                 paid_at=now
             )
+
             rider = ride.rider
             rider.total_trips += 1
             rider.save()
+
             notify_trip_completed(ride.passenger.phone, ride.final_fare)
 
         ride.status = new_status

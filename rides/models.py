@@ -31,6 +31,9 @@ class Ride(models.Model):
     estimated_fare = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     final_fare = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
 
+    platform_fee = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+    rider_earnings = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
+
     # Status
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='requested')
 
