@@ -217,6 +217,12 @@ class AnalyticsView(APIView):
             status='completed'
         ).aggregate(total=Sum('amount'))['total'] or 0
 
+        # Calculate platform earnings (13%) and rider payouts (87%)
+        platform_earnings_today = round(float(revenue_today) * 0.13, 2)
+        platform_total_earnings = round(float(total_revenue) * 0.13, 2)
+        rider_payouts_today = round(float(revenue_today) * 0.87, 2)
+        rider_total_payouts = round(float(total_revenue) * 0.87, 2)
+
         return Response({
             'users': {
                 'total_passengers': total_users,
@@ -234,5 +240,10 @@ class AnalyticsView(APIView):
             'revenue': {
                 'revenue_today_ghs': float(revenue_today),
                 'total_revenue_ghs': float(total_revenue),
+                'platform_earnings_today': platform_earnings_today,
+                'platform_total_earnings': platform_total_earnings,
+                'rider_payouts_today': rider_payouts_today,
+                'rider_total_payouts': rider_total_payouts,
+                'commission_rate': '13%',
             }
         })
